@@ -10,7 +10,7 @@ dbConnect();
 // app.get("/", (req, res) => {
 //   res.json({ msg: "hello world" });
 // });
-
+app.use(express.json());
 app.use(router);
 app.use(errorHandler);
 
