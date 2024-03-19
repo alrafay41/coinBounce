@@ -4,7 +4,44 @@ const User = require("../models/user");
 const passwordPattern = "^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$";
 
 const authController = {
-  async login(req, res, next) {},
+  async login(req, res, next) {
+    const loginSchema = Joi.object({
+      email: Joi.string().email().required,
+      password: Joi.string().pattern(passwordPattern).required,
+    });
+
+    const { error } = loginSchema.validate(req.body);
+
+    if (error) {
+      return next(error);
+    }
+
+    const { email, password } = req.body;
+    let user;
+    try {
+      user = User.findOne({ email: email });
+      if (!user) {
+        const error = {
+          status: 401,
+          message: "invalid email",
+        };
+        return next(error);
+      }
+      const match = await bcrypt.compare(user.password, password);
+
+      if (!match) {
+        const error = {
+          status: 401,
+          message: "invalid password",
+        };
+        return next(error);
+      }
+    } catch (error) {
+      return next(error);
+    }
+
+    return res.status(200).json({ user: user });
+  },
   async register(req, res, next) {
     //1. validate user
 
