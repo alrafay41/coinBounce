@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const UserDTO = require("../DTOs/user");
 const passwordPattern = "^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$";
 
 const authController = {
@@ -40,7 +41,9 @@ const authController = {
       return next(error);
     }
 
-    return res.status(200).json({ user: user });
+    const userDto = new UserDTO(user);
+
+    return res.status(200).json({ user: userDto });
   },
   async register(req, res, next) {
     //1. validate user
@@ -105,8 +108,10 @@ const authController = {
 
     const user = newUser.save();
 
+    const userDto = new UserDTO(user);
+
     //6. send response to client
-    return res.status(201).json({ user });
+    return res.status(201).json({ user: userDto });
   },
 };
 
