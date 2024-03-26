@@ -3,17 +3,17 @@ const {
   ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET,
 } = require("../config/index");
-const refreshToken = require("../models/token");
+const RefreshToken = require("../models/token");
 
 class JWTService {
   // the main difference between access and refresh token is that access token has a less expiry time as compared to refresh token. the secret key of both of them could be same,
   // but the best practice is to keep them dfferent
 
-  signAccessToken(payload, time, secret = ACCESS_TOKEN_SECRET) {
+  static signAccessToken(payload, time, secret = ACCESS_TOKEN_SECRET) {
     return jwt.sign(payload, secret, { expiresIn: time });
   }
 
-  signRefreshToken(payload, time, secret = REFRESH_TOKEN_SECRET) {
+  static signRefreshToken(payload, time, secret = REFRESH_TOKEN_SECRET) {
     return jwt.sign(payload, secret, { expiresIn: time });
   }
 
@@ -28,7 +28,7 @@ class JWTService {
 
   static async storeRefreshToken(token, userId) {
     try {
-      const newToken = new refreshToken({ token: token, userId: userId });
+      const newToken = new RefreshToken({ token: token, userId: userId });
       await newToken.save();
     } catch (error) {
       console.log(error);
