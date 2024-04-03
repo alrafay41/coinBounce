@@ -3,7 +3,7 @@ const fs = require("fs");
 const Blog = require("../models/blog");
 const Comment = require("../models/comment");
 const { BACKEND_SERVER_PATH } = require("../config/index");
-const BlogDTO = require("../DTOs/blog").default;
+const BlogDTO = require("../DTOs/blog");
 const BlogDetailsDTO = require("../DTOs/blogDetails");
 const mongodbIdPattern = /^[0-9a-fA-F]{24}$/;
 
@@ -40,7 +40,7 @@ const blogController = {
 
     // allot a random name
 
-    const imagePath = `${date.now()}-${author}.png`;
+    const imagePath = `${Date.now()}-${author}.png`;
 
     // save locally - first we create a folder on root, named as storage. then we import fs here.
     try {
@@ -119,7 +119,7 @@ const blogController = {
       content: Joi.string(),
       photo: Joi.string(),
       author: Joi.string().regex(mongodbIdPattern).required(),
-      blogId: Joi.string().regex(mongodbIdPattern).requuired(),
+      blogId: Joi.string().regex(mongodbIdPattern).required(),
     });
 
     const { error } = updateBlogSchema.validate(req.body);
@@ -184,7 +184,7 @@ const blogController = {
     //delete comments on that blog
 
     const deleteIdSchema = Joi.object({
-      id: Joi.regex(mongodbIdPattern).required().string(),
+      id: Joi.string().regex(mongodbIdPattern).required(),
     });
 
     const { error } = deleteIdSchema.validate(req.params);

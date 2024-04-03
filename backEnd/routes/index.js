@@ -24,13 +24,13 @@ router.post("/blog", auth, blogController.create);
 router.get("/blog/all", auth, blogController.getAll);
 
 //get by ID
-router.get("blog/:id", auth, blogController.getById);
+router.get("/blog/:id", auth, blogController.getById);
 
 //update
 router.put("/blog", auth, blogController.update);
 
 //delete
-router.delete("blog/:id", auth, blogController.delete);
+router.delete("/blog/:id", auth, blogController.delete);
 
 //comments
 
