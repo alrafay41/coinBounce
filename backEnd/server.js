@@ -14,6 +14,7 @@ dbConnect();
 app.use(express.json());
 app.use(cookieParser());
 app.use(router);
+app.use("/storage", express.static("storage"));
 app.use(errorHandler); // always use it at the end of the file
 
 app.listen(port, console.log(`backend is running on port:${port}`));
