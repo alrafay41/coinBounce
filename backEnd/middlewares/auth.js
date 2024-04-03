@@ -35,3 +35,5 @@ const auth = async (req, res, next) => {
 };
 
 module.exports = auth;
+
+// now as we know, middleware runs between the request and response, so we will call it in the routes --> index.js file
