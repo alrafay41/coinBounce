@@ -55,7 +55,7 @@ const commentController = {
       comments.push(dto);
     }
 
-    return res.status(200).json({ comment: comment });
+    return res.status(200).json({ comment: comments });
   },
 };
 
