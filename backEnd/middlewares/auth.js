@@ -5,9 +5,9 @@ const UserDTO = require("../DTOs/user");
 const auth = async (req, res, next) => {
   // 1. refresh,access token validation
 
-  const { accessToken, refreshToken } = req.cookies;
+  const { AccessToken, RefreshToken } = req.cookies;
 
-  if (!accessToken || !refreshToken) {
+  if (!AccessToken || !RefreshToken) {
     const error = {
       status: 401,
       message: "Unauthorized",
@@ -17,7 +17,7 @@ const auth = async (req, res, next) => {
 
   let _id;
   try {
-    _id = JWTService.verifyAccessToken[accessToken]._id;
+    _id = JWTService.verifyAccessToken(AccessToken)._id;
   } catch (error) {
     return next(error);
   }
@@ -32,6 +32,7 @@ const auth = async (req, res, next) => {
 
   const userDto = new UserDTO({ user });
   req.user = userDto;
+  next();
 };
 
 module.exports = auth;

@@ -2,15 +2,15 @@ const Joi = require("joi");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const UserDTO = require("../DTOs/user");
-const RefreshToken = require("../models/token");
+const RefreshTokenModel = require("../models/token");
 const JWTService = require("../services/JWTservice");
-const passwordPattern = "^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$";
+const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/;
 
 const authController = {
   async login(req, res, next) {
     const loginSchema = Joi.object({
-      email: Joi.string().email().required,
-      password: Joi.string().pattern(passwordPattern).required,
+      email: Joi.string().email().required(),
+      password: Joi.string().pattern(passwordPattern).required(),
     });
 
     const { error } = loginSchema.validate(req.body);
@@ -22,7 +22,7 @@ const authController = {
     const { email, password } = req.body;
     let user;
     try {
-      user = User.findOne({ email: email });
+      user = await User.findOne({ email: email });
       if (!user) {
         const error = {
           status: 401,
@@ -30,7 +30,7 @@ const authController = {
         };
         return next(error);
       }
-      const match = await bcrypt.compare(user.password, password);
+      const match = await bcrypt.compare(password, user.password);
 
       if (!match) {
         const error = {
@@ -53,7 +53,7 @@ const authController = {
     );
 
     try {
-      await RefreshToken.updateOne(
+      await RefreshTokenModel.updateOne(
         { _id: user._id },
         { token: refreshToken },
         { upsert: true }
@@ -64,7 +64,7 @@ const authController = {
 
     //save the new refresh token in the cookies
 
-    res.cookie("AcessToken", accessToken, {
+    res.cookie("AccessToken", accessToken, {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
     });
@@ -81,10 +81,10 @@ const authController = {
     //1. validate user
 
     const userRegisterSchema = Joi.object({
-      username: Joi.string().min(5).max(30).required,
-      name: Joi.string().max(30).required,
-      email: Joi.string().email().required,
-      password: Joi.string().pattern(passwordPattern).required,
+      username: Joi.string().min(5).max(30).required(),
+      name: Joi.string().max(30).required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().pattern(passwordPattern).required(),
       confirmPassword: Joi.ref("password"),
     });
 
@@ -92,7 +92,7 @@ const authController = {
 
     //2. if error in valdation --> return error via middleware
     if (error) {
-      error.next(); // here we call the middleware
+      return next(error); // here we call the middleware
     }
 
     // 3. if email and username already exist, return error
@@ -127,7 +127,7 @@ const authController = {
 
     //4.hash password
 
-    const hashPassword = bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 10);
 
     //5.save to db
     let accessToken;
@@ -178,19 +178,18 @@ const authController = {
   },
 
   async logout(req, res, next) {
-    const { refreshToken } = req.cookies;
-
+    const { RefreshToken } = req.cookies;
     // delete token from db
 
     try {
-      await RefreshToken.deleteOne({ token: refreshToken });
+      await RefreshTokenModel.deleteOne({ token: RefreshToken });
     } catch (error) {
       return next(error);
     }
 
     // delete it from cookies
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("AccessToken");
+    res.clearCookie("RefreshToken");
 
     return res.status(200).json({ user: null, auth: false });
   },
@@ -201,7 +200,7 @@ const authController = {
     //3. generate new token
     //4. update db, return response
 
-    const originalRefreshToken = req.cookies.refreshToken; // we could have destructered it but we need to use that refreshToken name again.
+    const originalRefreshToken = req.cookies.RefreshToken; // we could have destructered it but we need to use that refreshToken name again.
     // we verify it using jwtservice, and we will be getting id if there's a token same as in cookies
 
     let id;
@@ -217,7 +216,7 @@ const authController = {
     }
 
     try {
-      const match = RefreshToken.findOne({
+      const match = RefreshTokenModel.findOne({
         _id: id,
         token: originalRefreshToken,
       });
@@ -233,17 +232,17 @@ const authController = {
     }
 
     try {
-      const accessToken = JWTService.signAccessToken({ _id: id }, "30m");
-      const refreshToken = JWTService.signRefreshToken({ _id: id }, "60m");
+      const AccessToken = JWTService.signAccessToken({ _id: id }, "30m");
+      const RefreshToken = JWTService.signRefreshToken({ _id: id }, "60m");
 
-      await RefreshToken.updateOne({ _id: id }, { token: refreshToken });
+      await RefreshTokenModel.updateOne({ _id: id }, { token: RefreshToken });
 
-      res.cookie("accessToken", accessToken, {
+      res.cookie("AccessToken", AccessToken, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
       });
 
-      res.cookie("refreshToken", refreshToken, {
+      res.cookie("RefreshToken", RefreshToken, {
         maxAge: 1000 * 60 * 60 * 24,
         httpOnly: true,
       });
@@ -251,7 +250,7 @@ const authController = {
       return next(error);
     }
 
-    const user = User.findOne({ _id: id });
+    const user = await User.findOne({ _id: id });
     const userDto = new UserDTO(user);
 
     return res.status(200).json({ user: userDto, auth: true });
