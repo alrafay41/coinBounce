@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../controllers/authController");
 const blogController = require("../controllers/blogController");
+const commentController = require("../controllers/commentController");
 const auth = require("../middlewares/auth");
 
 router.get("/test", (req, res) => res.json({ msg: "working" }));
@@ -30,5 +31,15 @@ router.put("/blog", auth, blogController.update);
 
 //delete
 router.delete("blog/:id", auth, blogController.delete);
+
+//comments
+
+//create
+
+router.post("/comment", auth, commentController.create);
+
+//getById
+
+router.get("/comment/:id", auth, commentController.getById);
 
 module.exports = router;
