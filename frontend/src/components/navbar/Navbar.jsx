@@ -15,10 +15,10 @@ function Navbar() {
                 {
                     isAuthenticated ? (<div className={styles.signOutButton}>Sign Out</div>) : (
                         <div>
-                            <NavLink className={({ isActive }) => isActive ? styles.activeStyle : styles.inActiveStyle} to='log-in'>
+                            <NavLink className={({ isActive }) => isActive ? styles.activeStyle : styles.inActiveStyle} to='login'>
                                 <button className={styles.logInButton}>Log In</button>
                             </NavLink>
-                            <NavLink className={({ isActive }) => isActive ? styles.activeStyle : styles.inActiveStyle} to='sign-up'>
+                            <NavLink className={({ isActive }) => isActive ? styles.activeStyle : styles.inActiveStyle} to='signup'>
                                 <button className={styles.signUpButton}>Sign Up</button>
                             </NavLink>
                         </div>
